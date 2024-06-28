@@ -63,7 +63,6 @@ function getTask() {
 
   let mailTextChanged = false;
   let mailText = '\n期限が近付いているタスクがあります。\n';
-  var totalCharacter = 0;
   var mailTextList = [];
   for (let res of responses) {
     if (res['results'].length != 0) {
@@ -75,11 +74,9 @@ function getTask() {
         const formattedDue = Utilities.formatDate(interpritedDue, 'Asia/Tokyo', 'yyyy年MM月dd日');
         const url = res['results'][i]['url'];
         const taskText = '\nタスク名: ' + '「' + taskName + '」' + '\n' + '期限: ' + formattedDue + '\n' + url + '\n';
-        totalCharacter += taskText.length;
 
-        if (totalCharacter > 1000) {
+        if (mailText.length + taskText.length > 1000) {
           mailTextList.push(mailText);
-          totalCharacter = 0;
           mailText = taskText;
         } else {
           mailText += taskText;
@@ -88,6 +85,7 @@ function getTask() {
       }
     }
   }
+  mailTextList.push(mailText);
   if (!mailTextChanged) {
     mailTextList.push('期限が使づいているタスクはありません。');
   }
