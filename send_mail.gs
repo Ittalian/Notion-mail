@@ -62,7 +62,7 @@ function getTask() {
   const responses = [res_personal_develop, res_minecraft, res_graduation, res_freecodecamp, res_university];
 
   let mailTextChanged = false;
-  let mailText = '\n期限が近付いているタスクがあります。\n';
+  let mailText = '';
   var mailTextList = [];
   for (let res of responses) {
     if (res['results'].length != 0) {
@@ -105,15 +105,27 @@ function sendMessageByLineNotify() {
   const token = PropertiesService.getScriptProperties().getProperty('LINE_NOTIFY_TOKEN');
   const lineNotifyApi = "https://notify-api.line.me/api/notify";
   const messageList = getTask();
+  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日');
+  let page = 1;
 
-  for (let message of messageList) {
-    const options =
-    {
-      "method": "post",
-      "payload": "message=" + message,
-      "headers": { "Authorization": "Bearer " + token }
-    };
+  if (messageList[0] !== "期限が近付いているタスクはありません。") {
+    let firstMessage = `\n期限が近付いているタスクがあります。\n\n${today}\n\n${page}ページ目\n`;
 
-    UrlFetchApp.fetch(lineNotifyApi, options);
+    for (const message of messageList) {
+      createLineMessage(token, lineNotifyApi, firstMessage + message);
+      page += 1;
+      firstMessage = `\n\n${page}ページ目\n`;
+    }
+  } else {
+    createLineMessage(token, lineNotifyApi, messageList[0]);
   }
+}
+
+function createLineMessage(token, endpoint, message) {
+  const options = {
+    "method": "post",
+    "payload": "message=" + message,
+    "headers": { "Authorization": "Bearer " + token }
+  };
+  UrlFetchApp.fetch(endpoint, options);
 }
