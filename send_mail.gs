@@ -1,246 +1,231 @@
-const ENDPOINT_PERSONAL_DEVELOP = PropertiesService.getScriptProperties().getProperty('ENDPOINT_PERSONAL_DEVELOP');
-const ENDPOINT_MINECRAFT = PropertiesService.getScriptProperties().getProperty('ENDPOINT_MINECRAFT');
-const ENDPOINT_FREECODECAMP = PropertiesService.getScriptProperties().getProperty('ENDPOINT_FREECODECAMP');
-const ENDPOINT_GRADUATION = PropertiesService.getScriptProperties().getProperty('ENDPOINT_GRADUATION');
-const ENDPOINT_UNIVERSITY = PropertiesService.getScriptProperties().getProperty('ENDPOINT_UNIVERSITY');
+// const PROPERTIES = PropertiesService.getScriptProperties();
+// const ENDPOINTS = {
+//   PERSONAL_DEVELOP: PROPERTIES.getProperty('ENDPOINT_PERSONAL_DEVELOP'),
+//   MINECRAFT: PROPERTIES.getProperty('ENDPOINT_MINECRAFT'),
+//   FREECODECAMP: PROPERTIES.getProperty('ENDPOINT_FREECODECAMP'),
+//   GRADUATION: PROPERTIES.getProperty('ENDPOINT_GRADUATION'),
+//   UNIVERSITY: PROPERTIES.getProperty('ENDPOINT_UNIVERSITY')
+// };
+// const HEADERS = {
+//   'Content-Type': 'application/json',
+//   'Authorization': 'Bearer ' + PROPERTIES.getProperty('SECRET_KEY'),
+//   'Notion-Version': '2022-06-28'
+// };
 
-function getTask() {
-  var day = new Date();
-  const today = Utilities.formatDate(day, 'Asia/Tokyo', 'yyyy-MM-dd');
-  day.setDate(day.getDate() + 4);
-  const dueDay = Utilities.formatDate(day, 'Asia/Tokyo', 'yyyy-MM-dd');
+// function getNotionTasks(filter) {
+//   const options = {
+//     'method': 'POST',
+//     'headers': HEADERS,
+//     'payload': JSON.stringify({ "filter": filter, "sorts": [{ "property": "Due", "direction": "ascending" }] })
+//   };
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + PropertiesService.getScriptProperties().getProperty('SECRET_KEY'),
-    'Notion-Version': '2022-06-28',
-  };
-  // リクエストオプション
+//   return Object.values(ENDPOINTS).map(endpoint => 
+//     JSON.parse(UrlFetchApp.fetch(endpoint, options).getContentText())['results']
+//   ).flat();
+// }
+
+// function formatTasks(tasks) {
+//   return tasks.map(task => {
+//     const properties = task['properties'];
+//     const taskName = properties['Task name']['title'][0]['text']['content'];
+//     const due = Utilities.formatDate(Utilities.parseDate(properties['Due']['date']['start'], 'GMT', 'yyyy-MM-dd'), 'Asia/Tokyo', 'yyyy年MM月dd日');
+//     return `\nタスク名: 「${taskName}」\n期限: ${due}\n${task['url']}\n`;
+//   });
+// }
+
+// function chunkMessages(messages, maxLen = 1000) {
+//   let chunks = [], chunk = '';
+//   messages.forEach(msg => {
+//     if (chunk.length + msg.length > maxLen) {
+//       chunks.push(chunk);
+//       chunk = msg;
+//     } else {
+//       chunk += msg;
+//     }
+//   });
+//   chunks.push(chunk);
+//   return chunks;
+// }
+
+// function getTaskMessages() {
+//   const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
+//   const dueDay = Utilities.formatDate(new Date(new Date().setDate(new Date().getDate() + 4)), 'Asia/Tokyo', 'yyyy-MM-dd');
+
+//   const tasks = getNotionTasks({
+//     "and": [
+//       { "or": [{ "property": "Status", "status": { "equals": "Not started" }}, { "property": "Status", "status": { "equals": "In progress" }}]},
+//       { "and": [{ "property": "Due", "date": { "before": dueDay }}, { "property": "Due", "date": { "after": today }}]}
+//     ]
+//   });
+
+//   const messages = tasks.length > 0 ? formatTasks(tasks) : ['期限が近付いているタスクはありません。'];
+//   return chunkMessages(messages);
+// }
+
+// function getOverdueTaskMessages() {
+//   const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
+
+//   const tasks = getNotionTasks({
+//     "and": [
+//       { "or": [{ "property": "Status", "status": { "equals": "Not started" }}, { "property": "Status", "status": { "equals": "In progress" }}]},
+//       { "property": "Due", "date": { "before": today }}
+//     ]
+//   });
+
+//   const messages = tasks.length > 0 ? formatTasks(tasks) : ['期限が過ぎているタスクはありません。'];
+//   return chunkMessages(messages);
+// }
+
+// function sendMail() {
+//   const to = 'ittalian0329@gmail.com';
+//   const subject = 'タスクリマインドメール';
+//   const body = getTaskMessages().join("\n");
+//   MailApp.sendEmail(to, subject, body);
+// }
+
+// function sendLineMessages(token, messages, prefix) {
+//   const lineNotifyApi = "https://notify-api.line.me/api/notify";
+//   let page = 1;
+//   messages.forEach(message => {
+//     UrlFetchApp.fetch(lineNotifyApi, {
+//       "method": "post",
+//       "payload": "message=" + `${prefix}${page}ページ目\n${message}`,
+//       "headers": { "Authorization": "Bearer " + token }
+//     });
+//     page++;
+//   });
+// }
+
+// function sendLineNotify() {
+//   const token = PROPERTIES.getProperty('LINE_NOTIFY_TOKEN');
+//   const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日');
+
+//   const overdueMessages = getOverdueTaskMessages();
+//   if (overdueMessages[0] !== "期限が過ぎているタスクはありません。") {
+//     sendLineMessages(token, overdueMessages, `\n期限が過ぎているタスクがあります。\n\n${today}\n\n`);
+//   } else {
+//     sendLineMessages(token, overdueMessages, '');
+//   }
+
+//   const taskMessages = getTaskMessages();
+//   if (taskMessages[0] !== "期限が近付いているタスクはありません。") {
+//     sendLineMessages(token, taskMessages, `\n期限が近付いているタスクがあります。\n\n${today}\n\n`);
+//   } else {
+//     sendLineMessages(token, taskMessages, '');
+//   }
+// }
+
+const PROPERTIES = PropertiesService.getScriptProperties();
+const ENDPOINTS = {
+  PERSONAL_DEVELOP: PROPERTIES.getProperty('ENDPOINT_PERSONAL_DEVELOP'),
+  MINECRAFT: PROPERTIES.getProperty('ENDPOINT_MINECRAFT'),
+  FREECODECAMP: PROPERTIES.getProperty('ENDPOINT_FREECODECAMP'),
+  GRADUATION: PROPERTIES.getProperty('ENDPOINT_GRADUATION'),
+  UNIVERSITY: PROPERTIES.getProperty('ENDPOINT_UNIVERSITY')
+};
+const HEADERS = {
+  'Content-Type': 'application/json',
+  'Authorization': 'Bearer ' + PROPERTIES.getProperty('SECRET_KEY'),
+  'Notion-Version': '2022-06-28'
+};
+
+function getNotionTasks(filter) {
   const options = {
     'method': 'POST',
-    'headers': headers,
-    'payload': JSON.stringify({
-      "filter": {
-        "and": [
-          {
-            "or": [
-              {
-                "property": "Status",
-                "status": {
-                  "equals": "Not started"
-                }
-              },
-              {
-                "property": "Status",
-                "status": {
-                  "equals": "In progress"
-                }
-              }
-            ]
-          },
-          {
-            "and": [
-              {
-                "property": "Due",
-                "date": {
-                  "before": dueDay
-                }
-              },
-              {
-                "property": "Due",
-                "date": {
-                  "after": today
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "sorts": [
-        {
-          "property": "Due",
-          "direction": "ascending"
-        }
-      ]
-    })
+    'headers': HEADERS,
+    'payload': JSON.stringify({ "filter": filter, "sorts": [{ "property": "Due", "direction": "ascending" }] })
   };
 
-  const res_personal_develop = JSON.parse(UrlFetchApp.fetch(ENDPOINT_PERSONAL_DEVELOP, options).getContentText());
-  const res_minecraft = JSON.parse(UrlFetchApp.fetch(ENDPOINT_MINECRAFT, options).getContentText());
-  const res_graduation = JSON.parse(UrlFetchApp.fetch(ENDPOINT_GRADUATION, options).getContentText());
-  const res_freecodecamp = JSON.parse(UrlFetchApp.fetch(ENDPOINT_FREECODECAMP, options).getContentText());
-  const res_university = JSON.parse(UrlFetchApp.fetch(ENDPOINT_UNIVERSITY, options).getContentText());
-
-  const responses = [res_personal_develop, res_minecraft, res_graduation, res_freecodecamp, res_university];
-
-  let mailTextChanged = false;
-  let mailText = '';
-  var mailTextList = [];
-  for (let res of responses) {
-    if (res['results'].length != 0) {
-      for (let i = 0; i < res['results'].length; i++) {
-        const properties = res['results'][i]['properties'];
-        const taskName = properties['Task name']['title'][0]['text']['content'];
-        const due = properties['Due']['date']['start'];
-        const interpritedDue = Utilities.parseDate(due, 'GMT', 'yyyy-MM-dd');
-        const formattedDue = Utilities.formatDate(interpritedDue, 'Asia/Tokyo', 'yyyy年MM月dd日');
-        const url = res['results'][i]['url'];
-        const taskText = '\nタスク名: ' + '「' + taskName + '」' + '\n' + '期限: ' + formattedDue + '\n' + url + '\n';
-
-        if (mailText.length + taskText.length > 1000) {
-          mailTextList.push(mailText);
-          mailText = taskText;
-        } else {
-          mailText += taskText;
-        }
-        mailTextChanged = true;
-      }
-    }
-  }
-  mailTextList.push(mailText);
-  if (!mailTextChanged) {
-    mailTextList.push('期限が使づいているタスクはありません。');
-  }
-
-  return mailTextList;
+  return Object.values(ENDPOINTS).map(endpoint =>
+    JSON.parse(UrlFetchApp.fetch(endpoint, options).getContentText())['results']
+  ).flat();
 }
 
-function getOverTask() {
-  var day = new Date();
-  const today = Utilities.formatDate(day, 'Asia/Tokyo', 'yyyy-MM-dd');
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + PropertiesService.getScriptProperties().getProperty('SECRET_KEY'),
-    'Notion-Version': '2022-06-28',
-  };
-  // リクエストオプション
-  const options = {
-    'method': 'POST',
-    'headers': headers,
-    'payload': JSON.stringify({
-      "filter": {
-        "and": [
-          {
-            "or": [
-              {
-                "property": "Status",
-                "status": {
-                  "equals": "Not started"
-                }
-              },
-              {
-                "property": "Status",
-                "status": {
-                  "equals": "In progress"
-                }
-              }
-            ]
-          },
-          {
-            "property": "Due",
-            "date": {
-              "before": today
-            }
-          }
-        ]
-      },
-      "sorts": [
-        {
-          "property": "Due",
-          "direction": "ascending"
-        }
-      ]
-    })
-  };
-
-  const res_personal_develop = JSON.parse(UrlFetchApp.fetch(ENDPOINT_PERSONAL_DEVELOP, options).getContentText());
-  const res_minecraft = JSON.parse(UrlFetchApp.fetch(ENDPOINT_MINECRAFT, options).getContentText());
-  const res_graduation = JSON.parse(UrlFetchApp.fetch(ENDPOINT_GRADUATION, options).getContentText());
-  const res_freecodecamp = JSON.parse(UrlFetchApp.fetch(ENDPOINT_FREECODECAMP, options).getContentText());
-  const res_university = JSON.parse(UrlFetchApp.fetch(ENDPOINT_UNIVERSITY, options).getContentText());
-
-  const responses = [res_personal_develop, res_minecraft, res_graduation, res_freecodecamp, res_university];
-
-  let mailTextChanged = false;
-  let mailText = '';
-  var mailTextList = [];
-  for (let res of responses) {
-    if (res['results'].length != 0) {
-      for (let i = 0; i < res['results'].length; i++) {
-        const properties = res['results'][i]['properties'];
-        const taskName = properties['Task name']['title'][0]['text']['content'];
-        const due = properties['Due']['date']['start'];
-        const interpritedDue = Utilities.parseDate(due, 'GMT', 'yyyy-MM-dd');
-        const formattedDue = Utilities.formatDate(interpritedDue, 'Asia/Tokyo', 'yyyy年MM月dd日');
-        const url = res['results'][i]['url'];
-        const taskText = '\nタスク名: ' + '「' + taskName + '」' + '\n' + '期限: ' + formattedDue + '\n' + url + '\n';
-
-        if (mailText.length + taskText.length > 1000) {
-          mailTextList.push(mailText);
-          mailText = taskText;
-        } else {
-          mailText += taskText;
-        }
-        mailTextChanged = true;
-      }
-    }
-  }
-  mailTextList.push(mailText);
-  if (!mailTextChanged) {
-    mailTextList.push('期限が過ぎているタスクはありません。');
-  }
-
-  return mailTextList;
+function formatTasks(tasks) {
+  return tasks.map(task => {
+    const properties = task['properties'];
+    const taskName = properties['Task name']['title'][0]['text']['content'];
+    const due = Utilities.formatDate(Utilities.parseDate(properties['Due']['date']['start'], 'GMT', 'yyyy-MM-dd'), 'Asia/Tokyo', 'yyyy年MM月dd日');
+    return `\nタスク名: 「${taskName}」\n期限: ${due}\n${task['url']}\n`;
+  });
 }
 
-function calledByCron() {
+function chunkMessages(messages, maxLen = 1000) {
+  let chunks = [], chunk = '';
+  messages.forEach(msg => {
+    if (chunk.length + msg.length > maxLen) {
+      chunks.push(chunk);
+      chunk = msg;
+    } else {
+      chunk += msg;
+    }
+  });
+  chunks.push(chunk);
+  return chunks;
+}
+
+function getTaskMessages() {
+  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
+  const dueDay = Utilities.formatDate(new Date(new Date().setDate(new Date().getDate() + 4)), 'Asia/Tokyo', 'yyyy-MM-dd');
+
+  const tasks = getNotionTasks({
+    "and": [
+      { "or": [{ "property": "Status", "status": { "equals": "Not started" } }, { "property": "Status", "status": { "equals": "In progress" } }] },
+      { "and": [{ "property": "Due", "date": { "before": dueDay } }, { "property": "Due", "date": { "after": today } }] }
+    ]
+  });
+
+  const messages = tasks.length > 0 ? formatTasks(tasks) : ['期限が近付いているタスクはありません。'];
+  return chunkMessages(messages);
+}
+
+function getOverdueTaskMessages() {
+  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
+
+  const tasks = getNotionTasks({
+    "and": [
+      { "or": [{ "property": "Status", "status": { "equals": "Not started" } }, { "property": "Status", "status": { "equals": "In progress" } }] },
+      { "property": "Due", "date": { "before": today } }
+    ]
+  });
+
+  const messages = tasks.length > 0 ? formatTasks(tasks) : [];
+  return chunkMessages(messages);
+}
+
+function sendMail() {
   const to = 'ittalian0329@gmail.com';
   const subject = 'タスクリマインドメール';
-  const body = getTask().join("\n");
-
+  const body = getTaskMessages().join("\n");
   MailApp.sendEmail(to, subject, body);
 }
 
-function sendMessageByLineNotify() {
-  const token = PropertiesService.getScriptProperties().getProperty('LINE_NOTIFY_TOKEN');
+function sendLineMessages(token, messages, prefix) {
   const lineNotifyApi = "https://notify-api.line.me/api/notify";
-  const messageList = getTask();
-  const overMessageList = getOverTask();
-  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日');
   let page = 1;
-
-  if (overMessageList[0] !== "期限が過ぎているタスクはありません。") {
-    let firstMessage = `\n期限が過ぎているタスクがあります。\n\n${today}\n\n${page}ページ目\n`;
-
-    for (const message of overMessageList) {
-      createLineMessage(token, lineNotifyApi, firstMessage + message);
-      page += 1;
-      firstMessage = `\n\n${page}ページ目\n`;
-    }
-  } else {
-    createLineMessage(token, lineNotifyApi, messageList[0]);
-  }
-
-  if (messageList[0] !== "期限が近付いているタスクはありません。") {
-    let firstMessage = `\n期限が近付いているタスクがあります。\n\n${today}\n\n${page}ページ目\n`;
-
-    for (const message of messageList) {
-      createLineMessage(token, lineNotifyApi, firstMessage + message);
-      page += 1;
-      firstMessage = `\n\n${page}ページ目\n`;
-    }
-  } else {
-    createLineMessage(token, lineNotifyApi, messageList[0]);
-  }
-
-  page = 1;
+  messages.forEach(message => {
+    UrlFetchApp.fetch(lineNotifyApi, {
+      "method": "post",
+      "payload": "message=" + `${prefix}${page}ページ目\n${message}`,
+      "headers": { "Authorization": "Bearer " + token }
+    });
+    page++;
+  });
 }
 
-function createLineMessage(token, endpoint, message) {
-  const options = {
-    "method": "post",
-    "payload": "message=" + message,
-    "headers": { "Authorization": "Bearer " + token }
-  };
-  UrlFetchApp.fetch(endpoint, options);
+function sendLineNotify() {
+  const token = PROPERTIES.getProperty('LINE_NOTIFY_TOKEN');
+  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日');
+
+  const overdueMessages = getOverdueTaskMessages();
+  if (overdueMessages[0] != '') {
+    sendLineMessages(token, overdueMessages, `\n期限が過ぎているタスクがあります。\n\n${today}\n\n`);
+  }
+
+  const taskMessages = getTaskMessages();
+  if (taskMessages[0] !== "期限が近付いているタスクはありません。") {
+    sendLineMessages(token, taskMessages, `\n期限が近付いているタスクがあります。\n\n${today}\n\n`);
+  } else {
+    sendLineMessages(token, taskMessages, '');
+  }
 }
